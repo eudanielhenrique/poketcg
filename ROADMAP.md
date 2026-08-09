@@ -15,6 +15,7 @@
 - [x] Busca aceita "Nome nº" (ex: `Pikachu 58`), além de nome livre e ID exato
 - [x] Verso de carta estilizado no lugar do texto "sem imagem", com fallback pontual pra pokemontcg.io quando ela tem a imagem que a TCGdex não tem
 - [x] Coleções → Pokédex/Sets/Cartas como conceitos separados, em abas. Pokédex ganhou barra de progresso e %; Sets é novo — busca e acompanha um set real da TCGdex, com checklist que resolve cada slot vazio pelo ID exato da impressão (sem ambiguidade); Cartas continua sendo as coleções livres de antes.
+- [x] Escanear carta pela câmera: foto → OCR (`tesseract.js`, client-side) → pré-preenche a busca "Nome nº" já existente. Não é reconhecimento visual de imagem (isso exigiria um índice de comparação contra as ~23k imagens da TCGdex — fora de escopo); é leitura de texto, então funciona melhor em cartas com número impresso nítido (Sun/Moon em diante) e menos em cartas WOTC-era com fonte estilizada. Resultado sempre editável antes de buscar, nunca busca/registra sozinho.
 
 ## Em andamento
 
@@ -26,8 +27,6 @@ Baseado em revisão de produto de 2026-08-09 (Daniel), priorizado assim por ele 
 
 1. **[ ] Regras reais de deck building**, não só estatísticas: contador "42/60 cartas" em destaque, aviso de "deck incompleto" e de limite de cópias excedido (máx. 4 por carta não-básica de energia — regra fixa do jogo, não vem de API), separação por estágio de evolução (Básico/Estágio 1/Estágio 2) além de categoria.
 2. **[ ] Estados vazios e placeholders** — parcialmente feito (verso de carta estilizado). Falta: tela de coleção "faltam" com toggle Todos/Tenho/Faltam, home menos vazia depois do primeiro uso (buscas recentes, últimas cartas vistas, atalho pro deck em andamento).
-
-Pedido separado do mesmo dia (Daniel): **escanear carta pela câmera e preencher a coleção automaticamente.** Reconhecimento visual de verdade (comparar a foto contra as imagens da TCGdex) é um projeto grande — precisaria de um índice de comparação contra ~23k imagens, não é algo pra uma sessão só. Caminho mais realista, ainda não construído: capturar foto → OCR (leitura de texto, ex `tesseract.js`, roda no navegador) no nome + número impresso da carta → cair na busca "Nome nº" que já existe e já resolve com precisão. Funciona melhor em cartas modernas (número bem definido na base); cartas WOTC-era antigas têm layout menos previsível pra OCR.
 
 Itens menores da mesma revisão, sem prioridade definida:
 

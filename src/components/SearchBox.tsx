@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { searchCardsAction } from "@/lib/actions";
 import type { CardBrief, CardDetail } from "@/lib/tcgdex";
 import { SearchResultCard } from "./SearchResultCard";
+import { CameraScanButton } from "./CameraScanButton";
 
 export function SearchBox({
   onSelect,
@@ -36,24 +37,27 @@ export function SearchBox({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="relative">
-        <svg
-          viewBox="0 0 20 20"
-          fill="none"
-          className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-        >
-          <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-          <path d="M18 18l-4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={placeholder}
-          className="w-full rounded-2xl border border-border bg-surface py-3.5 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
-        />
-        {loading && (
-          <span className="absolute right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-[1.5px] border-muted/40 border-t-accent" />
-        )}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+          >
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M18 18l-4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={placeholder}
+            className="w-full rounded-2xl border border-border bg-surface py-3.5 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
+          />
+          {loading && (
+            <span className="absolute right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-[1.5px] border-muted/40 border-t-accent" />
+          )}
+        </div>
+        <CameraScanButton onScanned={setQuery} />
       </div>
 
       {visibleResults.length > 0 && (
