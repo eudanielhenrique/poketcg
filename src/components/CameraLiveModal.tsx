@@ -72,7 +72,10 @@ export function CameraLiveModal({
         if (!next) return;
         setGuess(next);
 
-        const confident = next.includes(" "); // "Nome nº" — os dois pedaços batendo
+        // número impresso no canto é minúsculo e quase nunca sai limpo no OCR — exigir
+        // nome+número juntos pra travar deixava o auto-lock nunca disparar na prática.
+        // Basta ter uma letra (ou seja, achou nome) pra confiar; número vem de bônus.
+        const confident = /[A-Za-zÀ-ÿ]/.test(next);
         if (confident && next === stable.guess) {
           stable.count += 1;
           if (stable.count >= STABLE_HITS_TO_CONFIRM) {
