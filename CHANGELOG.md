@@ -1,0 +1,18 @@
+# Changelog
+
+Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
+
+## [Unreleased]
+
+### Added
+
+- Projeto inicial: Next.js 16 + TypeScript + Tailwind v4, integrado à API pública do [TCGdex](https://tcgdex.dev) (v2, idioma `en`).
+- Busca de cartas por nome com resultados em grade.
+- Página de detalhe de carta: imagem, raridade, HP, tipo, ataques, efeito e preço de mercado (Cardmarket/TCGPlayer).
+- Coleções nomeadas, com 9 coleções pré-criadas por geração de Pokédex (Kanto a Paldea) semeadas no primeiro uso — o usuário registra nelas as cartas que realmente tem.
+- Decks: criação, registro de cartas com quantidade, e painel de análise (contagem por categoria, por tipo, curva de custo de recuo, HP médio, preço total estimado).
+- Persistência 100% local via `localStorage` (sem conta, sem backend).
+- Identidade visual própria: paleta escura com acento dourado, navegação translúcida (glass), tipografia editorial e microinterações (hover, press, entrada de cards).
+- Shell mobile com cara de app nativo: tab bar fixa no rodapé (Buscar/Coleção/Decks), topo simplificado, `theme-color` e `viewport-fit=cover`.
+- Suporte a PWA: manifest (`/manifest.webmanifest`), ícones (192/512/maskable) e service worker com cache stale-while-revalidate — instalável na tela inicial e funciona offline pra conteúdo já visitado.
+
