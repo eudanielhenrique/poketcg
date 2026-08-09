@@ -18,6 +18,7 @@ export default function CollectionDetailPage() {
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
   const [searchSeed, setSearchSeed] = useState({ query: "", nonce: 0 });
   const [previewCard, setPreviewCard] = useState<CardBrief | null>(null);
+  const [filter, setFilter] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
 
   const collection = collections[id];
@@ -79,6 +80,9 @@ export default function CollectionDetailPage() {
   }, 0);
   const priceUnit = cards.map(bestPrice).find(Boolean)?.unit;
   const species = collection.generation ? pokedexRange(collection.generation) : [];
+  const filterLower = filter.trim().toLowerCase();
+  const visibleSpecies = filterLower ? species.filter((p) => p.name.toLowerCase().includes(filterLower)) : species;
+  const visibleCards = filterLower ? cards.filter((c) => c.name.toLowerCase().includes(filterLower)) : cards;
 
   return (
     <div className="flex flex-col gap-8">
@@ -98,18 +102,50 @@ export default function CollectionDetailPage() {
         )}
       </div>
 
+      {(species.length > 0 || cards.length > 0) && (
+        <div className="relative">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+          >
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M18 18l-4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder={species.length > 0 ? "Filtrar por nome do Pokémon" : "Filtrar por nome da carta"}
+            className="w-full rounded-2xl border border-border bg-surface py-3 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
+          />
+        </div>
+      )}
+
       {species.length > 0 ? (
-        <PokedexGrid species={species} cards={cards} onPickEmpty={pickSpecies} onQtyChange={setQty} qtyOf={(cardId) => collection.cards[cardId] ?? 0} />
+        visibleSpecies.length > 0 ? (
+          <PokedexGrid
+            species={visibleSpecies}
+            cards={cards}
+            onPickEmpty={pickSpecies}
+            onQtyChange={setQty}
+            qtyOf={(cardId) => collection.cards[cardId] ?? 0}
+          />
+        ) : (
+          <p className="text-[15px] text-muted">nenhum Pokémon encontrado pra &ldquo;{filter}&rdquo;.</p>
+        )
       ) : (
-        cards.length > 0 && (
+        cards.length > 0 &&
+        (visibleCards.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {cards.map((card) => (
+            {visibleCards.map((card) => (
               <CardThumb key={card.id} card={card}>
                 <QuantityControl qty={collection.cards[card.id] ?? 0} onChange={(next) => setQty(card.id, next)} />
               </CardThumb>
             ))}
           </div>
-        )
+        ) : (
+          <p className="text-[15px] text-muted">nenhuma carta encontrada pra &ldquo;{filter}&rdquo;.</p>
+        ))
       )}
 
       <section ref={searchRef} className="flex flex-col gap-4 scroll-mt-20">
