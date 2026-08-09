@@ -44,7 +44,7 @@ Sem `.env` — a API do TCGdex é pública, sem chave.
 ## Serviços e integrações externas
 
 - **TCGdex** (`api.tcgdex.net`, `assets.tcgdex.net`) — única integração externa. Preço vem de `cardmarket` (EUR) e `tcgplayer` (USD) embutidos na própria resposta da carta; `bestPrice()` prioriza TCGPlayer por ser a fonte mais líquida pro mercado americano, cai pro trend do Cardmarket quando não há.
-- Sem deploy configurado ainda — projeto roda local. Alvo natural é Vercel (Next.js nativo), mas isso é decisão de quando o fundador quiser publicar.
+- **Deploy: Vercel**, conectado ao GitHub (`eudanielhenrique/poketcg`, público) — todo push em `main` gera um novo deploy automaticamente. Produção: https://poketcg-theta.vercel.app
 
 ## Decisões arquiteturais não óbvias
 
