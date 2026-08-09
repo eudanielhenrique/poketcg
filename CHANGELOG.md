@@ -18,6 +18,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Busca por código exato da carta (ex: `base1-4`) além de nome — resolve direto pra carta certa, útil pra cartas sem imagem ou com nome ambíguo. Código da carta (`#4/102`) agora aparece na página de detalhe.
 - Modal de preview ao adicionar carta numa coleção ou deck: mostra imagem, set, raridade, código e preço antes de confirmar, em vez de adicionar direto da grade de busca.
 - Filtro por nome dentro de uma coleção — filtra o checklist de Pokémon (nas coleções por geração) ou as cartas já registradas (nas coleções livres), sem precisar rolar a lista inteira procurando.
+- "Cartas em destaque" na home: 8 clássicos raros (Charizard Skyridge, Umbreon VMAX Evolving Skies, Charizard Base Set, Lugia Neo Genesis, etc.) com preço de mercado real da TCGdex, ordenados do mais caro pro mais barato.
 
 ### Changed
 
