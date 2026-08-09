@@ -1,8 +1,33 @@
-/** roda só quando chamado — tesseract.js (~2-3MB de WASM) nunca entra no bundle principal */
-export async function scanCardText(file: File): Promise<string> {
-  const Tesseract = (await import("tesseract.js")).default;
-  const { data } = await Tesseract.recognize(file, "eng");
+import type { Worker } from "tesseract.js";
+
+/**
+ * Worker do tesseract é caro de criar (baixa e inicializa o modelo de
+ * idioma) — reusa a mesma instância entre chamadas em vez de recriar a
+ * cada frame, essencial pro modo de câmera ao vivo (uma leitura a cada
+ * ~1.5s). Import dinâmico: tesseract.js (~2-3MB de WASM) só entra no
+ * bundle quando alguém realmente usa o scanner.
+ */
+let workerPromise: Promise<Worker> | null = null;
+
+function getWorker(): Promise<Worker> {
+  if (!workerPromise) {
+    workerPromise = import("tesseract.js").then((mod) => mod.default.createWorker("eng"));
+  }
+  return workerPromise;
+}
+
+export async function scanCardText(image: File | Blob): Promise<string> {
+  const worker = await getWorker();
+  const { data } = await worker.recognize(image);
   return data.text;
+}
+
+/** libera o worker (câmera ao vivo termina a sessão de scan) — sem isso ele fica ocupando memória à toa */
+export async function stopScanner(): Promise<void> {
+  if (!workerPromise) return;
+  const worker = await workerPromise;
+  workerPromise = null;
+  await worker.terminate();
 }
 
 /**

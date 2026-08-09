@@ -2,9 +2,11 @@
 
 import { useRef, useState } from "react";
 import { scanCardText, guessSearchQuery } from "@/lib/scanCard";
+import { CameraLiveModal } from "./CameraLiveModal";
 
 export function CameraScanButton({ onScanned }: { onScanned: (guess: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [liveOpen, setLiveOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -34,7 +36,7 @@ export function CameraScanButton({ onScanned }: { onScanned: (guess: string) => 
       />
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
+        onClick={() => setLiveOpen(true)}
         disabled={loading}
         aria-label="Escanear carta pela câmera"
         title="Escanear carta pela câmera"
@@ -54,6 +56,20 @@ export function CameraScanButton({ onScanned }: { onScanned: (guess: string) => 
           </svg>
         )}
       </button>
+
+      {liveOpen && (
+        <CameraLiveModal
+          onClose={() => setLiveOpen(false)}
+          onScanned={(guess) => {
+            setLiveOpen(false);
+            onScanned(guess);
+          }}
+          onFallback={() => {
+            setLiveOpen(false);
+            inputRef.current?.click();
+          }}
+        />
+      )}
     </>
   );
 }
