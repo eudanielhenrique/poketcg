@@ -38,7 +38,7 @@ export default function DecksPage() {
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && createDeck()}
           placeholder="Nome do novo deck"
-          className="flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-[15px] text-foreground placeholder:text-muted focus:border-border-strong focus:outline-none"
+          className="flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-base text-foreground placeholder:text-muted focus:border-border-strong focus:outline-none"
         />
         <button
           onClick={createDeck}

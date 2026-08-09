@@ -105,7 +105,7 @@ function PickerRow({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded-xl border border-border bg-background/60 px-3 py-2 text-[13px] text-foreground transition-colors focus:border-border-strong"
+        className="flex-1 rounded-xl border border-border bg-background/60 px-3 py-2 text-base text-foreground transition-colors focus:border-border-strong"
       >
         <option value="">{label}…</option>
         {items.map((item) => (

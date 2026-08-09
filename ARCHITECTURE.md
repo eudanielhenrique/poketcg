@@ -27,6 +27,7 @@ src/
     actions.ts                Server Actions que expõem tcgdex.ts pra client components
     storage.ts                estado local (coleções/decks) sincronizado com localStorage
     deckAnalysis.ts           lógica pura de análise de deck (com self-check em deckAnalysis.test.ts)
+    pokedex.ts                dataset estático (1025 espécies, nome + nº nacional) usado nas coleções por geração
 ```
 
 ## Como rodar
@@ -48,7 +49,8 @@ Sem `.env` — a API do TCGdex é pública, sem chave.
 
 ## Decisões arquiteturais não óbvias
 
-- **Coleções vêm pré-criadas por geração de Pokédex** (Kanto, Johto, ... Paldea), vazias — não é uma lista fechada de cartas, é só um agrupamento sugerido. O usuário registra ali qualquer carta/impressão que tiver do Pokémon correspondente. Semeadas uma única vez por navegador (flag `poketcg:collections:seeded` no localStorage), pra não reaparecerem se o usuário apagar todas de propósito.
+- **Coleções por geração já vêm com todos os Pokémon daquela geração listados** (dataset estático em `pokedex.ts`, nomes em inglês vindos da PokeAPI). O usuário não cadastra o Pokémon — só escolhe qual carta/impressão específica tem de cada um. Semeadas uma única vez por navegador (flag `poketcg:collections:seeded` no localStorage), pra não reaparecerem se o usuário apagar todas de propósito.
+- **Vínculo espécie ↔ carta registrada é por `dexId`, não por um campo próprio.** Cada carta Pokémon da TCGdex já vem com `dexId: number[]` (a quais Pokémon da Pokédex nacional ela corresponde). Pra saber se o slot "#6 Charizard" está preenchido, cruza-se `collection.cards` (o que foi registrado) contra `card.dexId.includes(6)` — nenhum dado novo persiste no storage além do que já existia (`cards: Record<cardId, qty>`), só a tela de coleção por geração passou a também iterar o dataset fixo de espécies em vez de só as cartas já registradas.
 - **`useLocalState` usa `useSyncExternalStore`, não `useState` + `useEffect`.** A primeira versão lia o localStorage num `useEffect` com `setState` — funciona, mas o ESLint (`react-hooks/set-state-in-effect`) sinaliza esse padrão como gerador de re-renders em cascata. `useSyncExternalStore` é a API que o próprio React recomenda pra sincronizar com uma fonte externa mutável (exatamente o caso do localStorage), e resolve o mismatch de hidratação (servidor não tem `window`) sem efeito manual.
 - **`Deck` e coleção nomeada compartilham o mesmo shape** (`{ id, name, cards: Record<cardId, qty> }`, tipo genérico `CardGroup`) — mesma estrutura de dados e mesma UI de lista/detalhe pros dois conceitos, só trocando a chave de storage.
 - **Preço e detalhes completos exigem uma chamada por carta** (`getCard`), porque a listagem de busca da API só devolve `id`/`name`/`image`. Coleção e deck buscam os detalhes de todas as cartas de uma vez (`getCardsDetailAction`) quando a tela abre.

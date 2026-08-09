@@ -22,6 +22,7 @@ export interface CardDetail extends CardBrief {
   category: "Pokemon" | "Trainer" | "Energy";
   illustrator?: string;
   rarity?: string;
+  dexId?: number[];
   hp?: number;
   types?: string[];
   stage?: string;

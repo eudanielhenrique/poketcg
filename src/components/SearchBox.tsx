@@ -8,11 +8,13 @@ import { CardThumb } from "./CardThumb";
 export function SearchBox({
   renderActions,
   placeholder = "Buscar carta por nome (ex: Pikachu)",
+  initialQuery = "",
 }: {
   renderActions?: (card: CardBrief) => React.ReactNode;
   placeholder?: string;
+  initialQuery?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<CardBrief[]>([]);
   const [searchedQuery, setSearchedQuery] = useState("");
 
@@ -46,7 +48,7 @@ export function SearchBox({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-2xl border border-border bg-surface py-3.5 pl-11 pr-4 text-[15px] text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
+          className="w-full rounded-2xl border border-border bg-surface py-3.5 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
         />
         {loading && (
           <span className="absolute right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-[1.5px] border-muted/40 border-t-accent" />

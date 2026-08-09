@@ -13,7 +13,10 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur-xl backdrop-saturate-150">
+    <header
+      className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur-xl backdrop-saturate-150"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <nav className="mx-auto flex max-w-5xl items-center gap-1 px-6 py-3.5 sm:px-8">
         <Link href="/" className="mr-4 flex items-center gap-2">
           <span className="relative h-5 w-5 overflow-hidden rounded-full border border-white/20 shadow-[0_0_0_1px_rgba(0,0,0,0.4)]">

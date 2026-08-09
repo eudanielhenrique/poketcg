@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { GENERATION_RANGES } from "./pokedex";
 
 export interface CardGroup {
   id: string;
   name: string;
   cards: Record<string, number>;
+  /** só presente nas coleções pré-prontas por geração — dispara a visão de checklist de Pokédex */
+  generation?: number;
 }
 
 export type CardGroups = Record<string, CardGroup>;
@@ -19,25 +22,13 @@ export const DECKS_KEY = "poketcg:decks";
 export const COLLECTIONS_KEY = "poketcg:collections";
 const COLLECTIONS_SEEDED_KEY = "poketcg:collections:seeded";
 
-/** Coleções pré-prontas por geração de Pokédex — pontos de partida, não listas fechadas: a pessoa registra ali qualquer carta que tiver do Pokémon correspondente. */
-const GENERATION_PRESETS = [
-  { name: "Geração 1 — Kanto (#1–151)" },
-  { name: "Geração 2 — Johto (#152–251)" },
-  { name: "Geração 3 — Hoenn (#252–386)" },
-  { name: "Geração 4 — Sinnoh (#387–493)" },
-  { name: "Geração 5 — Unova (#494–649)" },
-  { name: "Geração 6 — Kalos (#650–721)" },
-  { name: "Geração 7 — Alola (#722–809)" },
-  { name: "Geração 8 — Galar (#810–905)" },
-  { name: "Geração 9 — Paldea (#906–1025)" },
-];
-
+/** Coleções pré-prontas por geração de Pokédex — já vêm com todos os Pokémon da geração; a pessoa só escolhe qual carta tem de cada um. */
 function defaultCollections(): Collections {
   const result: Collections = {};
-  GENERATION_PRESETS.forEach((gen, i) => {
-    const id = `gen-${i + 1}`;
-    result[id] = { id, name: gen.name, cards: {} };
-  });
+  for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+    const id = `gen-${gen}`;
+    result[id] = { id, name: range.label, cards: {}, generation: Number(gen) };
+  }
   return result;
 }
 

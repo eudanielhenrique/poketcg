@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getCardsDetailAction } from "@/lib/actions";
 import { bestPrice, type CardDetail } from "@/lib/tcgdex";
+import { pokedexRange, type PokedexEntry } from "@/lib/pokedex";
 import { CardThumb } from "@/components/CardThumb";
 import { QuantityControl } from "@/components/QuantityControl";
 import { SearchBox } from "@/components/SearchBox";
@@ -14,6 +15,8 @@ export default function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [collections, setCollections] = useCollections();
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
+  const [searchSeed, setSearchSeed] = useState({ query: "", nonce: 0 });
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const collection = collections[id];
   const cardIds = useMemo(() => Object.keys(collection?.cards ?? {}), [collection]);
@@ -52,6 +55,11 @@ export default function CollectionDetailPage() {
     });
   }
 
+  function pickSpecies(name: string) {
+    setSearchSeed((s) => ({ query: name, nonce: s.nonce + 1 }));
+    searchRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   if (!collection) {
     return (
       <div className="flex flex-col gap-4">
@@ -68,6 +76,7 @@ export default function CollectionDetailPage() {
     return sum + (price ? price.value * (collection.cards[card.id] ?? 0) : 0);
   }, 0);
   const priceUnit = cards.map(bestPrice).find(Boolean)?.unit;
+  const species = collection.generation ? pokedexRange(collection.generation) : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -75,7 +84,9 @@ export default function CollectionDetailPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">{collection.name}</h1>
           <p className="mt-1 text-[15px] text-muted">
-            {Object.values(collection.cards).reduce((a, b) => a + b, 0)} cartas registradas
+            {species.length > 0
+              ? `${countRegistered(species, cards)}/${species.length} Pokémon registrados`
+              : `${Object.values(collection.cards).reduce((a, b) => a + b, 0)} cartas registradas`}
           </p>
         </div>
         {cards.length > 0 && (
@@ -85,19 +96,25 @@ export default function CollectionDetailPage() {
         )}
       </div>
 
-      {cards.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {cards.map((card) => (
-            <CardThumb key={card.id} card={card}>
-              <QuantityControl qty={collection.cards[card.id] ?? 0} onChange={(next) => setQty(card.id, next)} />
-            </CardThumb>
-          ))}
-        </div>
+      {species.length > 0 ? (
+        <PokedexGrid species={species} cards={cards} onPickEmpty={pickSpecies} onQtyChange={setQty} qtyOf={(cardId) => collection.cards[cardId] ?? 0} />
+      ) : (
+        cards.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {cards.map((card) => (
+              <CardThumb key={card.id} card={card}>
+                <QuantityControl qty={collection.cards[card.id] ?? 0} onChange={(next) => setQty(card.id, next)} />
+              </CardThumb>
+            ))}
+          </div>
+        )
       )}
 
-      <section className="flex flex-col gap-4">
+      <section ref={searchRef} className="flex flex-col gap-4 scroll-mt-20">
         <h2 className="text-lg font-medium tracking-tight text-foreground">Registrar carta</h2>
         <SearchBox
+          key={searchSeed.nonce}
+          initialQuery={searchSeed.query}
           renderActions={(card) => (
             <button
               onClick={() => addCard(card.id)}
@@ -108,6 +125,64 @@ export default function CollectionDetailPage() {
           )}
         />
       </section>
+    </div>
+  );
+}
+
+function countRegistered(species: PokedexEntry[], cards: CardDetail[]) {
+  const owned = new Set<number>();
+  for (const card of cards) {
+    for (const dex of card.dexId ?? []) owned.add(dex);
+  }
+  return species.filter((p) => owned.has(p.id)).length;
+}
+
+function PokedexGrid({
+  species,
+  cards,
+  onPickEmpty,
+  onQtyChange,
+  qtyOf,
+}: {
+  species: PokedexEntry[];
+  cards: CardDetail[];
+  onPickEmpty: (name: string) => void;
+  onQtyChange: (cardId: string, qty: number) => void;
+  qtyOf: (cardId: string) => number;
+}) {
+  const byDex = useMemo(() => {
+    const map = new Map<number, CardDetail>();
+    for (const card of cards) {
+      for (const dex of card.dexId ?? []) if (!map.has(dex)) map.set(dex, card);
+    }
+    return map;
+  }, [cards]);
+
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      {species.map((p) => {
+        const card = byDex.get(p.id);
+        if (card) {
+          return (
+            <CardThumb key={p.id} card={card}>
+              <QuantityControl qty={qtyOf(card.id)} onChange={(next) => onQtyChange(card.id, next)} />
+            </CardThumb>
+          );
+        }
+        return (
+          <button
+            key={p.id}
+            onClick={() => onPickEmpty(p.name)}
+            className="flex flex-col gap-2.5 text-left active:scale-[0.98] transition-transform duration-150"
+          >
+            <div className="flex aspect-[5/7] w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-surface/40 transition-colors duration-200 hover:border-border-strong hover:bg-surface">
+              <span className="text-[11px] tabular-nums text-muted">#{p.id}</span>
+              <span className="text-accent">+</span>
+            </div>
+            <p className="truncate text-[13px] text-muted">{p.name}</p>
+          </button>
+        );
+      })}
     </div>
   );
 }
