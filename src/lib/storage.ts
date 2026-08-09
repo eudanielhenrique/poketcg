@@ -9,6 +9,10 @@ export interface CardGroup {
   cards: Record<string, number>;
   /** só presente nas coleções pré-prontas por geração — dispara a visão de checklist de Pokédex */
   generation?: number;
+  /** só presente em coleções de "Sets" — id do set na TCGdex, dispara a visão de checklist do set */
+  setId?: string;
+  /** total de cartas oficiais do set, capturado na criação (evita reconsultar toda hora) */
+  setTotal?: number;
 }
 
 export type CardGroups = Record<string, CardGroup>;

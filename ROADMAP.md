@@ -14,6 +14,7 @@
 - [x] Identificação de versão na busca: set, código impresso (`4/102`), raridade, preço — resolve o problema de "vários Charizard, qual é qual"
 - [x] Busca aceita "Nome nº" (ex: `Pikachu 58`), além de nome livre e ID exato
 - [x] Verso de carta estilizado no lugar do texto "sem imagem", com fallback pontual pra pokemontcg.io quando ela tem a imagem que a TCGdex não tem
+- [x] Coleções → Pokédex/Sets/Cartas como conceitos separados, em abas. Pokédex ganhou barra de progresso e %; Sets é novo — busca e acompanha um set real da TCGdex, com checklist que resolve cada slot vazio pelo ID exato da impressão (sem ambiguidade); Cartas continua sendo as coleções livres de antes.
 
 ## Em andamento
 
@@ -23,9 +24,10 @@
 
 Baseado em revisão de produto de 2026-08-09 (Daniel), priorizado assim por ele — ordem importa aqui, ao contrário do resto da lista:
 
-1. **[ ] Coleções → Pokédex/Sets como conceitos separados.** Hoje "coleção" mistura duas ideias: "tenho pelo menos uma carta desse Pokémon" (checklist por geração, o que já existe) e "tenho esta impressão específica" (ex: Base Set completo, 102/102 cartas). Proposta: abas Cartas / Pokédex / Sets, com Sets mostrando progresso tipo "Base Set — 62/102 cartas" (exige buscar a lista completa de cartas de um set via `/sets/{id}` e cruzar com o que foi registrado, mesmo padrão de `dexId` já usado pra Pokédex).
-2. **[ ] Regras reais de deck building**, não só estatísticas: contador "42/60 cartas" em destaque, aviso de "deck incompleto" e de limite de cópias excedido (máx. 4 por carta não-básica de energia — regra fixa do jogo, não vem de API), separação por estágio de evolução (Básico/Estágio 1/Estágio 2) além de categoria.
-3. **[ ] Estados vazios e placeholders** — parcialmente feito (verso de carta estilizado). Falta: tela de coleção "faltam" com toggle Todos/Tenho/Faltam, home menos vazia depois do primeiro uso (buscas recentes, últimas cartas vistas, atalho pro deck em andamento).
+1. **[ ] Regras reais de deck building**, não só estatísticas: contador "42/60 cartas" em destaque, aviso de "deck incompleto" e de limite de cópias excedido (máx. 4 por carta não-básica de energia — regra fixa do jogo, não vem de API), separação por estágio de evolução (Básico/Estágio 1/Estágio 2) além de categoria.
+2. **[ ] Estados vazios e placeholders** — parcialmente feito (verso de carta estilizado). Falta: tela de coleção "faltam" com toggle Todos/Tenho/Faltam, home menos vazia depois do primeiro uso (buscas recentes, últimas cartas vistas, atalho pro deck em andamento).
+
+Pedido separado do mesmo dia (Daniel): **escanear carta pela câmera e preencher a coleção automaticamente.** Reconhecimento visual de verdade (comparar a foto contra as imagens da TCGdex) é um projeto grande — precisaria de um índice de comparação contra ~23k imagens, não é algo pra uma sessão só. Caminho mais realista, ainda não construído: capturar foto → OCR (leitura de texto, ex `tesseract.js`, roda no navegador) no nome + número impresso da carta → cair na busca "Nome nº" que já existe e já resolve com precisão. Funciona melhor em cartas modernas (número bem definido na base); cartas WOTC-era antigas têm layout menos previsível pra OCR.
 
 Itens menores da mesma revisão, sem prioridade definida:
 

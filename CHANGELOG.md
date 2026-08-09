@@ -21,6 +21,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - "Cartas em destaque" na home: 8 clássicos raros (Charizard Skyridge, Umbreon VMAX Evolving Skies, Charizard Base Set, Lugia Neo Genesis, etc.) com preço de mercado real da TCGdex, ordenados do mais caro pro mais barato.
 - Busca aceita "Nome nº" (ex: `Pikachu 58` ou `Pikachu 58/102`) pra resolver direto a impressão certa, combinando nome e número impresso na carta na própria consulta à API.
 - Fallback de imagem pra pokemontcg.io quando a TCGdex não tem a imagem de uma carta (mesmo ID, quando o esquema coincide). Melhor-esforço: cobre uma fração pequena dos casos, já que a maioria das cartas sem imagem na TCGdex são prints nichados (Trainer Kits, promoções anuais) que a pokemontcg.io também não cataloga.
+- "Coleção" agora separa três conceitos em abas: **Pokédex** (progresso por geração, "73/151 Pokémon", já existia mas ganhou barra de progresso e %), **Sets** (novo — acompanhe um set real da TCGdex, ex "Base Set — 62/102 cartas", buscando e escolhendo o set), **Cartas** (as coleções livres de antes). Tocar num slot vazio do checklist de um Set pré-preenche a busca com o ID exato daquela impressão, então resolve sem ambiguidade nenhuma.
 
 ### Changed
 

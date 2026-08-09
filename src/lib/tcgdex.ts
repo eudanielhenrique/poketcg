@@ -151,3 +151,29 @@ export async function getCardsBrief(ids: string[]): Promise<CardDetail[]> {
   const cards = await Promise.all(ids.map((id) => getCard(id)));
   return cards.filter((c): c is CardDetail => c !== null);
 }
+
+export interface SetBrief {
+  id: string;
+  name: string;
+  logo?: string;
+  cardCount?: { official: number; total: number };
+}
+
+export async function searchSets(query: string): Promise<SetBrief[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const params = new URLSearchParams({ name: trimmed, "pagination:itemsPerPage": "20" });
+  const res = await fetch(`${API_BASE}/${LANG}/sets?${params}`, { next: { revalidate: 3600 } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+/** roster completo de um set (todas as cartas, mesmo shape breve da busca) + o total oficial de cartas */
+export async function getSetCards(setId: string): Promise<{ cards: CardBrief[]; total: number } | null> {
+  const res = await fetch(`${API_BASE}/${LANG}/sets/${encodeURIComponent(setId)}`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return { cards: data.cards ?? [], total: data.cardCount?.official ?? data.cards?.length ?? 0 };
+}
