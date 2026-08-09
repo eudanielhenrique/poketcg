@@ -10,6 +10,9 @@ assert.equal(guessSearchQuery("###\n4/102\nxx"), "4");
 // só nome reconhecido (sem número no recorte)
 assert.equal(guessSearchQuery("Charizard\nStage 2"), "Charizard");
 
+// nome com ruído do OCR grudado atrás (comum em foto real, não em texto limpo)
+assert.equal(guessSearchQuery("Dialga lv.45\n1/130"), "Dialga 1");
+
 // nada reconhecível — cai pra primeira linha não vazia
 assert.equal(guessSearchQuery("123\n456"), "123");
 

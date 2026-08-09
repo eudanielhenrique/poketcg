@@ -18,6 +18,7 @@ export function CameraLiveModal({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const [guess, setGuess] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(false);
@@ -31,12 +32,27 @@ export function CameraLiveModal({
     async function captureAndScan() {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas || video.videoWidth === 0) return;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      const frame = frameRef.current;
+      if (!video || !canvas || !frame || video.videoWidth === 0) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(video, 0, 0);
+
+      // recorta só a área do quadro-guia, não o frame inteiro — sem isso o OCR
+      // via com fundo/mão/mesa junto da carta, que fica pequena demais pra ler
+      const videoRect = video.getBoundingClientRect();
+      const guideRect = frame.getBoundingClientRect();
+      const scale = Math.max(videoRect.width / video.videoWidth, videoRect.height / video.videoHeight);
+      const offsetX = (video.videoWidth * scale - videoRect.width) / 2;
+      const offsetY = (video.videoHeight * scale - videoRect.height) / 2;
+      const srcX = (guideRect.left - videoRect.left + offsetX) / scale;
+      const srcY = (guideRect.top - videoRect.top + offsetY) / scale;
+      const srcW = guideRect.width / scale;
+      const srcH = guideRect.height / scale;
+
+      const UPSCALE = 2; // câmera ambiente costuma dar sensor de baixa resolução — amplia antes do OCR
+      canvas.width = srcW * UPSCALE;
+      canvas.height = srcH * UPSCALE;
+      ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
       if (!blob || stopped) return;
@@ -73,7 +89,7 @@ export function CameraLiveModal({
     }
 
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
+      .getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } })
       .then((s) => {
         if (stopped) {
           s.getTracks().forEach((t) => t.stop());
@@ -123,7 +139,10 @@ export function CameraLiveModal({
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
         style={{ paddingBottom: "18vh" }}
       >
-        <div className="aspect-[5/7] w-[70vw] max-w-xs rounded-2xl border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]" />
+        <div
+          ref={frameRef}
+          className="aspect-[5/7] w-[70vw] max-w-xs rounded-2xl border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
+        />
       </div>
 
       <button

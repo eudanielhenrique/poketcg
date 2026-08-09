@@ -47,9 +47,23 @@ export function guessSearchQuery(rawText: string): string {
 
   // ignora rótulos comuns acima do nome ("Basic Pokémon", "Stage 2") — não são o nome da carta
   const boilerplate = /^(basic|stage ?1|stage ?2|mega|vmax|vstar|break|restored|level-?up)$/i;
-  const nameLine = lines.find(
-    (l) => /^[A-Za-zÀ-ÿ'. ]{3,}$/.test(l) && !/pok[eé]mon/i.test(l) && !boilerplate.test(l)
-  );
+  // pega só os tokens iniciais que são puramente alfabéticos, parando no primeiro
+  // token com dígito/símbolo — OCR de foto real gruda lixo depois do nome na mesma
+  // linha ("Dialga lv.45"); cortar por token (não a linha inteira) preserva nomes
+  // com espaço ("Origin Forme Dialga") mas descarta o lixo colado no fim
+  function leadingNameTokens(line: string): string {
+    const out: string[] = [];
+    for (const token of line.split(/\s+/)) {
+      if (!/^[A-Za-zÀ-ÿ'.]+$/.test(token)) break;
+      out.push(token);
+    }
+    return out.join(" ");
+  }
+
+  const nameLine = lines
+    .filter((l) => !boilerplate.test(l) && !/pok[eé]mon/i.test(l))
+    .map(leadingNameTokens)
+    .find((name) => name.length >= 3);
 
   if (nameLine && number) return `${nameLine} ${number}`;
   return nameLine ?? number ?? lines[0] ?? "";
