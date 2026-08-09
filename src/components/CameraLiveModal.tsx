@@ -22,6 +22,10 @@ export function CameraLiveModal({
   const [guess, setGuess] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(false);
+  // debug temporário: mostra o recorte real e o texto bruto do OCR — remover quando o
+  // reconhecimento em foto real estiver confiável (ver ARCHITECTURE.md)
+  const [debugCrop, setDebugCrop] = useState<string | null>(null);
+  const [debugRaw, setDebugRaw] = useState("");
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -53,6 +57,7 @@ export function CameraLiveModal({
       canvas.width = srcW * UPSCALE;
       canvas.height = srcH * UPSCALE;
       ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+      setDebugCrop(canvas.toDataURL("image/png"));
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
       if (!blob || stopped) return;
@@ -61,6 +66,7 @@ export function CameraLiveModal({
       try {
         const text = await scanCardText(blob);
         if (stopped) return;
+        setDebugRaw(text);
         const next = guessSearchQuery(text);
         setAnalyzing(false);
         if (!next) return;
@@ -153,6 +159,19 @@ export function CameraLiveModal({
       >
         ✕
       </button>
+
+      {debugCrop && (
+        <div
+          className="absolute left-4 flex max-w-[55vw] flex-col gap-1"
+          style={{ top: "max(1rem, env(safe-area-inset-top))" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={debugCrop} alt="" className="h-24 w-auto rounded-lg border border-white/40" />
+          <p className="max-h-16 overflow-y-auto whitespace-pre-wrap rounded-md bg-black/70 p-1.5 font-mono text-[10px] leading-tight text-white/80">
+            {debugRaw || "…"}
+          </p>
+        </div>
+      )}
 
       <div
         className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/90 to-transparent px-6 pt-16"
