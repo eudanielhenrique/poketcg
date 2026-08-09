@@ -22,4 +22,5 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 - Campos de busca/seleção com fonte abaixo de 16px causavam zoom automático ao focar no iOS — corrigido pra `text-base`.
 - Logo do topo ficava sobreposta à barra de status (relógio) em iPhones com notch — header agora respeita `env(safe-area-inset-top)`.
+- Service worker cacheava a página HTML com stale-while-revalidate, então depois de um novo deploy o celular continuava vendo a versão anterior (apontando pra arquivos JS que não existiam mais). Navegação (HTML) agora é rede-primeiro; só cache com hash de build (que nunca fica velho, porque a URL muda a cada deploy) usa stale-while-revalidate.
 
