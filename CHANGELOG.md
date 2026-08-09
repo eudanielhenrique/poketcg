@@ -19,6 +19,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Modal de preview ao adicionar carta numa coleção ou deck: mostra imagem, set, raridade, código e preço antes de confirmar, em vez de adicionar direto da grade de busca.
 - Filtro por nome dentro de uma coleção — filtra o checklist de Pokémon (nas coleções por geração) ou as cartas já registradas (nas coleções livres), sem precisar rolar a lista inteira procurando.
 
+### Changed
+
+- Registrar carta numa coleção (tocando num Pokémon vazio do checklist, ou no botão "+ Registrar"/"+ Adicionar cartas") abre um modal de busca em tela cheia, sem rolar a página até uma seção de busca lá embaixo.
+- Quando há mais de uma carta registrada pro mesmo Pokémon numa coleção por geração, o slot mostra a última adicionada (antes mostrava sempre a primeira).
+
 ### Fixed
 
 - Campos de busca/seleção com fonte abaixo de 16px causavam zoom automático ao focar no iOS — corrigido pra `text-base`.

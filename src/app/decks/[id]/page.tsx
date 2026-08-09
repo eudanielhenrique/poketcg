@@ -8,7 +8,7 @@ import type { CardBrief, CardDetail } from "@/lib/tcgdex";
 import { analyzeDeck } from "@/lib/deckAnalysis";
 import { CardThumb } from "@/components/CardThumb";
 import { QuantityControl } from "@/components/QuantityControl";
-import { SearchBox } from "@/components/SearchBox";
+import { SearchModal } from "@/components/SearchModal";
 import { DistBars } from "@/components/DistBars";
 import { CardPreviewModal } from "@/components/CardPreviewModal";
 import { useDecks } from "@/lib/storage";
@@ -18,6 +18,7 @@ export default function DeckPage() {
   const [decks, setDecks] = useDecks();
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
   const [previewCard, setPreviewCard] = useState<CardBrief | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const deck = decks[id];
   const cardIds = useMemo(() => Object.keys(deck?.cards ?? {}), [deck]);
@@ -111,10 +112,22 @@ export default function DeckPage() {
         </section>
       )}
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">Adicionar cartas</h2>
-        <SearchBox onSelect={setPreviewCard} />
-      </section>
+      <button
+        onClick={() => setSearchOpen(true)}
+        className="rounded-2xl bg-accent px-4 py-3 text-[15px] font-medium text-accent-foreground transition-transform duration-150 active:scale-95"
+      >
+        + Adicionar cartas
+      </button>
+
+      <SearchModal
+        open={searchOpen}
+        title="Adicionar cartas"
+        onClose={() => setSearchOpen(false)}
+        onSelect={(card) => {
+          setSearchOpen(false);
+          setPreviewCard(card);
+        }}
+      />
 
       <CardPreviewModal
         card={previewCard}

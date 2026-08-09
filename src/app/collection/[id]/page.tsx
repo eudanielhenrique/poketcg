@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCardsDetailAction } from "@/lib/actions";
 import { bestPrice, type CardBrief, type CardDetail } from "@/lib/tcgdex";
 import { pokedexRange, type PokedexEntry } from "@/lib/pokedex";
 import { CardThumb } from "@/components/CardThumb";
 import { QuantityControl } from "@/components/QuantityControl";
-import { SearchBox } from "@/components/SearchBox";
+import { SearchModal } from "@/components/SearchModal";
 import { CardPreviewModal } from "@/components/CardPreviewModal";
 import { useCollections } from "@/lib/storage";
 
@@ -16,10 +16,9 @@ export default function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [collections, setCollections] = useCollections();
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
-  const [searchSeed, setSearchSeed] = useState({ query: "", nonce: 0 });
+  const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [previewCard, setPreviewCard] = useState<CardBrief | null>(null);
   const [filter, setFilter] = useState("");
-  const searchRef = useRef<HTMLDivElement>(null);
 
   const collection = collections[id];
   const cardIds = useMemo(() => Object.keys(collection?.cards ?? {}), [collection]);
@@ -56,11 +55,6 @@ export default function CollectionDetailPage() {
         [id]: { ...current, cards: { ...current.cards, [cardId]: (current.cards[cardId] ?? 0) + 1 } },
       };
     });
-  }
-
-  function pickSpecies(name: string) {
-    setSearchSeed((s) => ({ query: name, nonce: s.nonce + 1 }));
-    searchRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   if (!collection) {
@@ -102,31 +96,39 @@ export default function CollectionDetailPage() {
         )}
       </div>
 
-      {(species.length > 0 || cards.length > 0) && (
-        <div className="relative">
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-          >
-            <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-            <path d="M18 18l-4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder={species.length > 0 ? "Filtrar por nome do Pokémon" : "Filtrar por nome da carta"}
-            className="w-full rounded-2xl border border-border bg-surface py-3 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
-          />
-        </div>
-      )}
+      <div className="flex gap-2">
+        {(species.length > 0 || cards.length > 0) && (
+          <div className="relative flex-1">
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            >
+              <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M18 18l-4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder={species.length > 0 ? "Filtrar por nome do Pokémon" : "Filtrar por nome da carta"}
+              className="w-full rounded-2xl border border-border bg-surface py-3 pl-11 pr-4 text-base text-foreground placeholder:text-muted transition-colors duration-200 focus:border-border-strong focus:outline-none"
+            />
+          </div>
+        )}
+        <button
+          onClick={() => setSearchQuery("")}
+          className="shrink-0 rounded-2xl bg-accent px-4 py-3 text-[15px] font-medium text-accent-foreground transition-transform duration-150 active:scale-95"
+        >
+          + Registrar
+        </button>
+      </div>
 
       {species.length > 0 ? (
         visibleSpecies.length > 0 ? (
           <PokedexGrid
             species={visibleSpecies}
             cards={cards}
-            onPickEmpty={pickSpecies}
+            onPickEmpty={setSearchQuery}
             onQtyChange={setQty}
             qtyOf={(cardId) => collection.cards[cardId] ?? 0}
           />
@@ -148,10 +150,16 @@ export default function CollectionDetailPage() {
         ))
       )}
 
-      <section ref={searchRef} className="flex flex-col gap-4 scroll-mt-20">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">Registrar carta</h2>
-        <SearchBox key={searchSeed.nonce} initialQuery={searchSeed.query} onSelect={setPreviewCard} />
-      </section>
+      <SearchModal
+        open={searchQuery !== null}
+        initialQuery={searchQuery ?? ""}
+        title="Registrar carta"
+        onClose={() => setSearchQuery(null)}
+        onSelect={(card) => {
+          setSearchQuery(null);
+          setPreviewCard(card);
+        }}
+      />
 
       <CardPreviewModal
         card={previewCard}
@@ -190,7 +198,7 @@ function PokedexGrid({
   const byDex = useMemo(() => {
     const map = new Map<number, CardDetail>();
     for (const card of cards) {
-      for (const dex of card.dexId ?? []) if (!map.has(dex)) map.set(dex, card);
+      for (const dex of card.dexId ?? []) map.set(dex, card);
     }
     return map;
   }, [cards]);
