@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -96,7 +97,7 @@ export default function CollectionsPage() {
     const id = crypto.randomUUID();
     setCollections((prev) => ({
       ...prev,
-      [id]: { id, name: set.name, cards: {}, setId: set.id, setTotal: set.cardCount?.official ?? 0 },
+      [id]: { id, name: set.name, cards: {}, setId: set.id, setTotal: set.cardCount?.official ?? 0, logo: set.logo },
     }));
     router.push(`/collection/${id}`);
   }
@@ -170,6 +171,7 @@ export default function CollectionsPage() {
                     key={collection.id}
                     className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors duration-150 hover:border-border-strong active:scale-[0.99]"
                   >
+                    <SetLogo logo={collection.logo} name={collection.name} />
                     <Link href={`/collection/${collection.id}`} className="min-w-0 flex-1 py-0.5">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="truncate font-medium text-foreground">{collection.name}</p>
@@ -243,6 +245,17 @@ export default function CollectionsPage() {
       )}
 
       {setPickerOpen && <SetPickerModal onClose={() => setSetPickerOpen(false)} onSelect={selectSet} />}
+    </div>
+  );
+}
+
+function SetLogo({ logo, name }: { logo?: string; name: string }) {
+  if (!logo) {
+    return <div className="h-9 w-14 shrink-0 rounded-lg bg-surface-strong" />;
+  }
+  return (
+    <div className="relative h-9 w-14 shrink-0">
+      <Image src={`${logo}.png`} alt={name} fill sizes="56px" className="object-contain" unoptimized />
     </div>
   );
 }

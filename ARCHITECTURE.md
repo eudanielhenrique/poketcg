@@ -22,7 +22,7 @@ src/
     decks/page.tsx           lista de decks
     decks/[id]/page.tsx      cartas do deck + análise (categoria/tipo/HP/recuo/preço)
     layout.tsx, globals.css  shell + design tokens
-  components/                Nav, SearchBox, CardThumb, CardActions, QuantityControl, DistBars
+  components/                Nav, SearchBox, QuickRegisterSearch, CardThumb, CardActions, QuantityControl, DistBars
   lib/
     tcgdex.ts                cliente da API TCGdex + helpers de imagem/preço
     actions.ts                Server Actions que expõem tcgdex.ts pra client components
@@ -67,3 +67,5 @@ Sem `.env` — a API do TCGdex é pública, sem chave.
 - **`useLocalState` usa `useSyncExternalStore`, não `useState` + `useEffect`.** A primeira versão lia o localStorage num `useEffect` com `setState` — funciona, mas o ESLint (`react-hooks/set-state-in-effect`) sinaliza esse padrão como gerador de re-renders em cascata. `useSyncExternalStore` é a API que o próprio React recomenda pra sincronizar com uma fonte externa mutável (exatamente o caso do localStorage), e resolve o mismatch de hidratação (servidor não tem `window`) sem efeito manual.
 - **`Deck` e coleção nomeada compartilham o mesmo shape** (`{ id, name, cards: Record<cardId, qty> }`, tipo genérico `CardGroup`) — mesma estrutura de dados e mesma UI de lista/detalhe pros dois conceitos, só trocando a chave de storage.
 - **Preço e detalhes completos exigem uma chamada por carta** (`getCard`), porque a listagem de busca da API só devolve `id`/`name`/`image`. Coleção e deck buscam os detalhes de todas as cartas de uma vez (`getCardsDetailAction`) quando a tela abre.
+- **Busca da home (`QuickRegisterSearch.tsx`) auto-arquiva por geração em vez de perguntar a coleção.** A home não tem uma coleção "atual" — diferente de dentro de `/collection/[id]`, onde o alvo já é óbvio e o modal registra ali mesmo. `generationForDexId()` (`pokedex.ts`) mapeia o primeiro `dexId` da carta pra uma das 9 faixas de geração (`GENERATION_RANGES`) e registra direto em `gen-{n}`. Cartas sem `dexId` de geração conhecida (Trainer, Energy, ou promos sem espécie) não têm pra onde ir automaticamente — mostra aviso em vez de arquivar errado ou silenciosamente descartar.
+- **Logo do set é capturado uma vez na criação da coleção** (`logo: set.logo` em `selectSet()`, `collection/page.tsx`), não buscado toda vez que a tela abre — mesma URL base da TCGdex (`assets.tcgdex.net/.../logo`, sem extensão) usada com `.png` nos três lugares que exibem (lista de Sets, `SetPickerModal`, header do detalhe). Coleções de Set criadas antes desse campo existir ficam sem logo (mostram placeholder cinza) — não há migração retroativa porque o dado (qual set é) já está em `setId`, só o logo precisaria ser rebuscado, e o app não faz backfill de storage.

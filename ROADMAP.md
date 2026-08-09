@@ -16,6 +16,8 @@
 - [x] Verso de carta estilizado no lugar do texto "sem imagem", com fallback pontual pra pokemontcg.io quando ela tem a imagem que a TCGdex não tem
 - [x] Coleções → Pokédex/Sets/Cartas como conceitos separados, em abas. Pokédex ganhou barra de progresso e %; Sets é novo — busca e acompanha um set real da TCGdex, com checklist que resolve cada slot vazio pelo ID exato da impressão (sem ambiguidade); Cartas continua sendo as coleções livres de antes.
 - [x] Escanear carta pela câmera, ao vivo: aponta a câmera, lê o quadro atual a cada ~1.5s, trava sozinho quando o mesmo "Nome nº" bate duas vezes seguidas (tipo leitor de código de barras) e pré-preenche a busca já existente. Cai pro fluxo de foto única se a câmera não estiver disponível. Não é reconhecimento visual de imagem (isso exigiria um índice de comparação contra as ~23k imagens da TCGdex — fora de escopo); é leitura de texto, então funciona melhor em cartas com número impresso nítido (Sun/Moon em diante) e menos em cartas WOTC-era com fonte estilizada. Resultado sempre editável antes de buscar, nunca busca/registra sozinho.
+- [x] Sets acompanhados mostram o logo oficial (lista, busca de sets, header do detalhe) — testado com Evolving Skies.
+- [x] Carta buscada/escaneada na home vai automaticamente pra Pokédex da geração certa (ex: Dialga → Sinnoh), sem perguntar em qual coleção — testado ponta a ponta (Dialga #483 → gen-4, toast de confirmação, thumbnail aparece no slot certo).
 
 ## Em andamento
 

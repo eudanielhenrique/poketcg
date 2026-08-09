@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -102,15 +103,22 @@ export default function CollectionDetailPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">{collection.name}</h1>
-          <p className="mt-1 text-[15px] text-muted">
-            {isSet
-              ? `${registeredCount}/${collection.setTotal ?? slots.length} cartas`
-              : species.length > 0
-                ? `${registeredCount}/${species.length} Pokémon registrados`
-                : `${Object.values(collection.cards).reduce((a, b) => a + b, 0)} cartas registradas`}
-          </p>
+        <div className="flex items-center gap-3">
+          {collection.logo && (
+            <div className="relative h-10 w-16 shrink-0">
+              <Image src={`${collection.logo}.png`} alt="" fill sizes="64px" className="object-contain" unoptimized />
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{collection.name}</h1>
+            <p className="mt-1 text-[15px] text-muted">
+              {isSet
+                ? `${registeredCount}/${collection.setTotal ?? slots.length} cartas`
+                : species.length > 0
+                  ? `${registeredCount}/${species.length} Pokémon registrados`
+                  : `${Object.values(collection.cards).reduce((a, b) => a + b, 0)} cartas registradas`}
+            </p>
+          </div>
         </div>
         {valueLabel && (
           <p className="text-[15px] text-muted">

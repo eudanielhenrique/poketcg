@@ -21,6 +21,14 @@ export function pokedexRange(generation: number): PokedexEntry[] {
   return POKEDEX.filter((p) => p.id >= range.start && p.id <= range.end);
 }
 
+/** a qual geração um nº de Pokédex pertence, ex 483 (Dialga) → 4 (Sinnoh) */
+export function generationForDexId(dexId: number): number | null {
+  for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+    if (dexId >= range.start && dexId <= range.end) return Number(gen);
+  }
+  return null;
+}
+
 export const POKEDEX: PokedexEntry[] = [
   { id: 1, name: "Bulbasaur" },
   { id: 2, name: "Ivysaur" },

@@ -1,4 +1,4 @@
-import { SearchBox } from "@/components/SearchBox";
+import { QuickRegisterSearch } from "@/components/QuickRegisterSearch";
 import { CardThumb } from "@/components/CardThumb";
 import { getCardsBrief, bestPrice, type CardDetail } from "@/lib/tcgdex";
 
@@ -32,7 +32,7 @@ export default async function Home() {
         </p>
       </div>
 
-      <SearchBox />
+      <QuickRegisterSearch />
 
       {featured.length > 0 && (
         <section className="flex flex-col gap-4">

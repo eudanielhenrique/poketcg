@@ -13,6 +13,8 @@ export interface CardGroup {
   setId?: string;
   /** total de cartas oficiais do set, capturado na criação (evita reconsultar toda hora) */
   setTotal?: number;
+  /** URL base do logo (sem extensão) — só presente em coleções de "Sets" */
+  logo?: string;
 }
 
 export type CardGroups = Record<string, CardGroup>;
