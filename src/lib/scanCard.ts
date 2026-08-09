@@ -52,10 +52,16 @@ export function guessSearchQuery(rawText: string): string {
   // linha ("Dialga lv.45"); cortar por token (não a linha inteira) preserva nomes
   // com espaço ("Origin Forme Dialga") mas descarta o lixo colado no fim
   function leadingNameTokens(line: string): string {
+    const tokens = line.split(/\s+/);
+    // reflexo/borda da carta na foto vira token de pontuação solto ANTES do nome
+    // (ex ": Pumpkaboo") — pula token(s) de abertura sem nenhuma letra
+    let start = 0;
+    while (start < tokens.length && !/[A-Za-zÀ-ÿ]/.test(tokens[start])) start++;
+
     const out: string[] = [];
-    for (const token of line.split(/\s+/)) {
-      if (!/^[A-Za-zÀ-ÿ'.]+$/.test(token)) break;
-      out.push(token);
+    for (let i = start; i < tokens.length; i++) {
+      if (!/^[A-Za-zÀ-ÿ'.]+$/.test(tokens[i])) break;
+      out.push(tokens[i]);
     }
     return out.join(" ");
   }

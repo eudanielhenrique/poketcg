@@ -36,7 +36,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ### Fixed
 
-- Scanner de câmera não reconhecia cartas em foto real (só funcionava com texto sintético de teste): a captura jogava o frame inteiro da câmera pro OCR (fundo, mão, mesa junto da carta) em vez de recortar só a área do quadro-guia mostrado na tela, e a heurística de nome exigia a linha inteira do OCR limpa, o que quase nunca acontece numa foto de verdade. Corrigido: captura agora recorta e amplia só a área do quadro-guia antes do OCR, câmera pede resolução mais alta, e a heurística de nome tolera lixo grudado no fim da linha (ex "Dialga lv.45" → "Dialga").
+- Scanner de câmera não reconhecia cartas em foto real (só funcionava com texto sintético de teste): a captura jogava o frame inteiro da câmera pro OCR (fundo, mão, mesa junto da carta) em vez de recortar só a área do quadro-guia mostrado na tela, e a heurística de nome exigia a linha inteira do OCR limpa, o que quase nunca acontece numa foto de verdade. Corrigido: captura agora recorta e amplia só a área do quadro-guia antes do OCR, câmera pede resolução mais alta, e a heurística de nome tolera lixo grudado nas duas pontas da linha (ex "`: Pumpkaboo`" → "Pumpkaboo", confirmado com teste em foto real).
 
 
 - Campos de busca/seleção com fonte abaixo de 16px causavam zoom automático ao focar no iOS — corrigido pra `text-base`.
