@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getCard, imageUrl, bestPrice } from "@/lib/tcgdex";
+import { getCard, imageUrl, bestPrice, cardCode } from "@/lib/tcgdex";
 import { CardActions } from "@/components/CardActions";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -23,6 +23,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
   if (!card) notFound();
 
   const price = bestPrice(card);
+  const code = cardCode(card);
   const src = imageUrl(card.image, "high");
   const glow = TYPE_COLORS[card.types?.[0] ?? ""] ?? "#f0b429";
 
@@ -45,6 +46,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
           <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">{card.name}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
             {card.set.name} · {card.rarity ?? "raridade desconhecida"} · {card.category}
+          </p>
+          <p className="mt-1 font-mono text-[12px] text-muted/70">
+            {code && `#${code} · `}
+            {card.id}
           </p>
         </div>
 

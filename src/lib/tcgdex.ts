@@ -33,12 +33,23 @@ export interface CardDetail extends CardBrief {
   effect?: string;
   trainerType?: string;
   energyType?: string;
-  set: { id: string; name: string; logo?: string; symbol?: string };
+  set: { id: string; name: string; logo?: string; symbol?: string; cardCount?: { official: number; total: number } };
   variants_detailed?: { type: string; pricing?: CardPricing }[];
 }
 
 export function imageUrl(image: string | undefined, quality: "low" | "high" = "high") {
   return image ? `${image}/${quality}.webp` : undefined;
+}
+
+/** código impresso na carta, ex "4/102" — null quando a API não informa o total do set */
+export function cardCode(card: Pick<CardDetail, "localId" | "set">): string | null {
+  const total = card.set.cardCount?.official;
+  return total ? `${card.localId}/${total}` : null;
+}
+
+/** heurística pra reconhecer um ID direto da TCGdex (ex "base1-4", "swsh3-136") em vez de um nome */
+function looksLikeCardId(query: string): boolean {
+  return query.includes("-") && /\d/.test(query) && !/\s/.test(query);
 }
 
 /** melhor preço de mercado disponível pra carta (USD tcgplayer > EUR cardmarket), null se sem dado */
@@ -54,9 +65,16 @@ export function bestPrice(card: Pick<CardDetail, "variants_detailed">): { value:
   return null;
 }
 
-export async function searchCards(name: string): Promise<CardBrief[]> {
-  if (!name.trim()) return [];
-  const url = `${API_BASE}/${LANG}/cards?name=${encodeURIComponent(name)}&pagination:itemsPerPage=30`;
+export async function searchCards(query: string): Promise<CardBrief[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  if (looksLikeCardId(trimmed)) {
+    const card = await getCard(trimmed);
+    if (card) return [card];
+  }
+
+  const url = `${API_BASE}/${LANG}/cards?name=${encodeURIComponent(trimmed)}&pagination:itemsPerPage=30`;
   const res = await fetch(url, { next: { revalidate: 3600 } });
   if (!res.ok) return [];
   return res.json();

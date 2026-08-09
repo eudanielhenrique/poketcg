@@ -4,18 +4,20 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { getCardsDetailAction } from "@/lib/actions";
-import type { CardDetail } from "@/lib/tcgdex";
+import type { CardBrief, CardDetail } from "@/lib/tcgdex";
 import { analyzeDeck } from "@/lib/deckAnalysis";
 import { CardThumb } from "@/components/CardThumb";
 import { QuantityControl } from "@/components/QuantityControl";
 import { SearchBox } from "@/components/SearchBox";
 import { DistBars } from "@/components/DistBars";
+import { CardPreviewModal } from "@/components/CardPreviewModal";
 import { useDecks } from "@/lib/storage";
 
 export default function DeckPage() {
   const { id } = useParams<{ id: string }>();
   const [decks, setDecks] = useDecks();
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
+  const [previewCard, setPreviewCard] = useState<CardBrief | null>(null);
 
   const deck = decks[id];
   const cardIds = useMemo(() => Object.keys(deck?.cards ?? {}), [deck]);
@@ -111,17 +113,18 @@ export default function DeckPage() {
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-medium tracking-tight text-foreground">Adicionar cartas</h2>
-        <SearchBox
-          renderActions={(card) => (
-            <button
-              onClick={() => addCard(card.id)}
-              className="w-full rounded-xl bg-surface-strong py-1.5 text-[13px] font-medium text-foreground transition-all duration-150 hover:bg-border-strong active:scale-95"
-            >
-              + adicionar
-            </button>
-          )}
-        />
+        <SearchBox onSelect={setPreviewCard} />
       </section>
+
+      <CardPreviewModal
+        card={previewCard}
+        onClose={() => setPreviewCard(null)}
+        confirmLabel="Adicionar ao deck"
+        onConfirm={(card) => {
+          addCard(card.id);
+          setPreviewCard(null);
+        }}
+      />
     </div>
   );
 }

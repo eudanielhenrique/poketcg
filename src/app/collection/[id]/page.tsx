@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getCardsDetailAction } from "@/lib/actions";
-import { bestPrice, type CardDetail } from "@/lib/tcgdex";
+import { bestPrice, type CardBrief, type CardDetail } from "@/lib/tcgdex";
 import { pokedexRange, type PokedexEntry } from "@/lib/pokedex";
 import { CardThumb } from "@/components/CardThumb";
 import { QuantityControl } from "@/components/QuantityControl";
 import { SearchBox } from "@/components/SearchBox";
+import { CardPreviewModal } from "@/components/CardPreviewModal";
 import { useCollections } from "@/lib/storage";
 
 export default function CollectionDetailPage() {
@@ -16,6 +17,7 @@ export default function CollectionDetailPage() {
   const [collections, setCollections] = useCollections();
   const [fetchedCards, setFetchedCards] = useState<CardDetail[]>([]);
   const [searchSeed, setSearchSeed] = useState({ query: "", nonce: 0 });
+  const [previewCard, setPreviewCard] = useState<CardBrief | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const collection = collections[id];
@@ -112,19 +114,18 @@ export default function CollectionDetailPage() {
 
       <section ref={searchRef} className="flex flex-col gap-4 scroll-mt-20">
         <h2 className="text-lg font-medium tracking-tight text-foreground">Registrar carta</h2>
-        <SearchBox
-          key={searchSeed.nonce}
-          initialQuery={searchSeed.query}
-          renderActions={(card) => (
-            <button
-              onClick={() => addCard(card.id)}
-              className="w-full rounded-xl bg-surface-strong py-1.5 text-[13px] font-medium text-foreground transition-all duration-150 hover:bg-border-strong active:scale-95"
-            >
-              + registrar
-            </button>
-          )}
-        />
+        <SearchBox key={searchSeed.nonce} initialQuery={searchSeed.query} onSelect={setPreviewCard} />
       </section>
+
+      <CardPreviewModal
+        card={previewCard}
+        onClose={() => setPreviewCard(null)}
+        confirmLabel="Registrar nesta coleção"
+        onConfirm={(card) => {
+          addCard(card.id);
+          setPreviewCard(null);
+        }}
+      />
     </div>
   );
 }
