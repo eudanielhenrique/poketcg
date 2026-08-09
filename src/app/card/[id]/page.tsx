@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getCard, imageUrl, bestPrice, cardCode } from "@/lib/tcgdex";
+import { getCard, imageUrl, bestPrice, formatPrice, cardCode } from "@/lib/tcgdex";
 import { CardActions } from "@/components/CardActions";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -17,6 +17,18 @@ const TYPE_COLORS: Record<string, string> = {
   Colorless: "#b8b8bf",
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  Pokemon: "Pokémon",
+  Trainer: "Treinador",
+  Energy: "Energia",
+};
+
+const STAGE_LABELS: Record<string, string> = {
+  Basic: "Básico",
+  Stage1: "Estágio 1",
+  Stage2: "Estágio 2",
+};
+
 export default async function CardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const card = await getCard(id);
@@ -24,6 +36,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
 
   const price = bestPrice(card);
   const code = cardCode(card);
+  const rarity = card.rarity && card.rarity !== "None" ? card.rarity : null;
   const src = imageUrl(card.image, "high");
   const glow = TYPE_COLORS[card.types?.[0] ?? ""] ?? "#f0b429";
 
@@ -45,18 +58,21 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">{card.name}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
-            {card.set.name} · {card.rarity ?? "raridade desconhecida"} · {card.category}
+            {card.set.name}
+            {code && <span> · {code}</span>}
           </p>
-          <p className="mt-1 font-mono text-[12px] text-muted/70">
-            {code && `#${code} · `}
-            {card.id}
+          <p className="mt-0.5 text-[13px] text-muted/80">
+            {[rarity, CATEGORY_LABELS[card.category] ?? card.category].filter(Boolean).join(" · ")}
           </p>
+          <p className="mt-1 font-mono text-[11px] text-muted/50">{card.id}</p>
         </div>
 
         {price && (
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-success/25 bg-success/10 px-4 py-2">
-            <span className="text-lg font-semibold tracking-tight text-success">{price.value.toFixed(2)}</span>
-            <span className="text-[13px] text-success/70">{price.unit}</span>
+          <div className="flex flex-col gap-0.5">
+            <div className="inline-flex w-fit items-center rounded-full border border-success/25 bg-success/10 px-4 py-2">
+              <span className="text-lg font-semibold tracking-tight text-success">{formatPrice(price)}</span>
+            </div>
+            <p className="pl-1 text-[11px] text-muted">preço de mercado</p>
           </div>
         )}
 
@@ -66,7 +82,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
             {card.types?.map((t) => (
               <Pill key={t} label="Tipo" value={t} accent={TYPE_COLORS[t]} />
             ))}
-            {card.stage && <Pill label="Estágio" value={card.stage} />}
+            {card.stage && <Pill label="Estágio" value={STAGE_LABELS[card.stage] ?? card.stage} />}
             {typeof card.retreat === "number" && <Pill label="Recuo" value={String(card.retreat)} />}
           </div>
         )}

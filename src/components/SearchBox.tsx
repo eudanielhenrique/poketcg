@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { searchCardsAction } from "@/lib/actions";
-import type { CardBrief } from "@/lib/tcgdex";
-import { CardThumb } from "./CardThumb";
+import type { CardBrief, CardDetail } from "@/lib/tcgdex";
+import { SearchResultCard } from "./SearchResultCard";
 
 export function SearchBox({
   onSelect,
-  placeholder = "Buscar por nome ou código (ex: Pikachu, base1-4)",
+  placeholder = "Nome, código ou nº impresso (ex: Pikachu 58/102, base1-4)",
   initialQuery = "",
 }: {
   /** quando informado, tocar num resultado chama isso em vez de navegar — use pra abrir um modal de preview */
@@ -16,7 +16,7 @@ export function SearchBox({
   initialQuery?: string;
 }) {
   const [query, setQuery] = useState(initialQuery);
-  const [results, setResults] = useState<CardBrief[]>([]);
+  const [results, setResults] = useState<CardDetail[]>([]);
   const [searchedQuery, setSearchedQuery] = useState("");
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export function SearchBox({
               className="animate-[card-in_0.35s_cubic-bezier(0.16,1,0.3,1)_backwards]"
               style={{ animationDelay: `${Math.min(i, 12) * 25}ms` }}
             >
-              <CardThumb card={card} onClick={onSelect ? () => onSelect(card) : undefined} />
+              <SearchResultCard card={card} onClick={onSelect ? () => onSelect(card) : undefined} />
             </div>
           ))}
         </div>

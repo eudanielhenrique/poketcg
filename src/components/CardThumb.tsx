@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CardBrief } from "@/lib/tcgdex";
 import { imageUrl } from "@/lib/tcgdex";
+import { CardBackPlaceholder } from "./CardBackPlaceholder";
 
 export function CardThumb({
   card,
@@ -30,10 +31,7 @@ export function CardThumb({
             unoptimized
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-1 px-3 text-center text-muted">
-            <span className="text-xs">sem imagem</span>
-            <span className="text-[11px] tabular-nums text-muted/70">#{card.localId}</span>
-          </div>
+          <CardBackPlaceholder label={`#${card.localId}`} />
         )}
       </div>
       <p className="mt-2 truncate text-[13px] font-medium text-foreground/90">{card.name}</p>

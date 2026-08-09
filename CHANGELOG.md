@@ -19,11 +19,16 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Modal de preview ao adicionar carta numa coleção ou deck: mostra imagem, set, raridade, código e preço antes de confirmar, em vez de adicionar direto da grade de busca.
 - Filtro por nome dentro de uma coleção — filtra o checklist de Pokémon (nas coleções por geração) ou as cartas já registradas (nas coleções livres), sem precisar rolar a lista inteira procurando.
 - "Cartas em destaque" na home: 8 clássicos raros (Charizard Skyridge, Umbreon VMAX Evolving Skies, Charizard Base Set, Lugia Neo Genesis, etc.) com preço de mercado real da TCGdex, ordenados do mais caro pro mais barato.
+- Busca aceita "Nome nº" (ex: `Pikachu 58` ou `Pikachu 58/102`) pra resolver direto a impressão certa, combinando nome e número impresso na carta na própria consulta à API.
+- Fallback de imagem pra pokemontcg.io quando a TCGdex não tem a imagem de uma carta (mesmo ID, quando o esquema coincide). Melhor-esforço: cobre uma fração pequena dos casos, já que a maioria das cartas sem imagem na TCGdex são prints nichados (Trainer Kits, promoções anuais) que a pokemontcg.io também não cataloga.
 
 ### Changed
 
 - Registrar carta numa coleção (tocando num Pokémon vazio do checklist, ou no botão "+ Registrar"/"+ Adicionar cartas") abre um modal de busca em tela cheia, sem rolar a página até uma seção de busca lá embaixo.
 - Quando há mais de uma carta registrada pro mesmo Pokémon numa coleção por geração, o slot mostra a última adicionada (antes mostrava sempre a primeira).
+- Resultados de busca agora mostram set, código impresso na carta (`4/102`), raridade e preço — antes só o nome, o que tornava impossível distinguir entre várias impressões do mesmo Pokémon sem reconhecer a arte de cor.
+- Cartas sem imagem mostram um verso estilizado no lugar do texto "sem imagem".
+- Página de detalhe da carta: rótulos de interface traduzidos (Pokémon/Treinador/Energia, Básico/Estágio 1/Estágio 2 — nomes de ataques continuam em inglês, como vêm da fonte oficial), raridade "None" (promo sem raridade definida) escondida em vez de mostrada como texto literal, preço com formatação BRL (ex "US$ 818,65").
 
 ### Fixed
 

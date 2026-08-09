@@ -1,8 +1,8 @@
 "use server";
 
-import { searchCards, getCard, getCardsBrief, type CardBrief, type CardDetail } from "./tcgdex";
+import { searchCards, getCard, getCardsBrief, type CardDetail } from "./tcgdex";
 
-export async function searchCardsAction(query: string): Promise<CardBrief[]> {
+export async function searchCardsAction(query: string): Promise<CardDetail[]> {
   return searchCards(query);
 }
 
