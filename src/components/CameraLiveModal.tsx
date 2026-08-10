@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { scanCardText, guessSearchQuery, stopScanner } from "@/lib/scanCard";
 
-const SCAN_INTERVAL_MS = 1500;
-const STABLE_HITS_TO_CONFIRM = 2;
+type Phase = "live" | "analyzing" | "result";
 
 export function CameraLiveModal({
   onClose,
@@ -19,8 +18,8 @@ export function CameraLiveModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const [phase, setPhase] = useState<Phase>("live");
   const [guess, setGuess] = useState("");
-  const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(false);
   // debug temporário: mostra o recorte real e o texto bruto do OCR — remover quando o
   // reconhecimento em foto real estiver confiável (ver ARCHITECTURE.md)
@@ -29,73 +28,7 @@ export function CameraLiveModal({
 
   useEffect(() => {
     let stream: MediaStream | null = null;
-    let timer: ReturnType<typeof setTimeout>;
     let stopped = false;
-    const stable = { guess: "", count: 0 };
-
-    async function captureAndScan() {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const frame = frameRef.current;
-      if (!video || !canvas || !frame || video.videoWidth === 0) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      // recorta só a área do quadro-guia, não o frame inteiro — sem isso o OCR
-      // via com fundo/mão/mesa junto da carta, que fica pequena demais pra ler
-      const videoRect = video.getBoundingClientRect();
-      const guideRect = frame.getBoundingClientRect();
-      const scale = Math.max(videoRect.width / video.videoWidth, videoRect.height / video.videoHeight);
-      const offsetX = (video.videoWidth * scale - videoRect.width) / 2;
-      const offsetY = (video.videoHeight * scale - videoRect.height) / 2;
-      const srcX = (guideRect.left - videoRect.left + offsetX) / scale;
-      const srcY = (guideRect.top - videoRect.top + offsetY) / scale;
-      const srcW = guideRect.width / scale;
-      const srcH = guideRect.height / scale;
-
-      const UPSCALE = 2; // câmera ambiente costuma dar sensor de baixa resolução — amplia antes do OCR
-      canvas.width = srcW * UPSCALE;
-      canvas.height = srcH * UPSCALE;
-      ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
-      setDebugCrop(canvas.toDataURL("image/png"));
-
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-      if (!blob || stopped) return;
-
-      setAnalyzing(true);
-      try {
-        const text = await scanCardText(blob);
-        if (stopped) return;
-        setDebugRaw(text);
-        const next = guessSearchQuery(text);
-        setAnalyzing(false);
-        if (!next) return;
-        setGuess(next);
-
-        // número impresso no canto é minúsculo e quase nunca sai limpo no OCR — exigir
-        // nome+número juntos pra travar deixava o auto-lock nunca disparar na prática.
-        // Basta ter uma letra (ou seja, achou nome) pra confiar; número vem de bônus.
-        const confident = /[A-Za-zÀ-ÿ]/.test(next);
-        if (confident && next === stable.guess) {
-          stable.count += 1;
-          if (stable.count >= STABLE_HITS_TO_CONFIRM) {
-            stopped = true;
-            onScanned(next);
-          }
-        } else {
-          stable.guess = next;
-          stable.count = 1;
-        }
-      } catch {
-        setAnalyzing(false);
-      }
-    }
-
-    async function loop() {
-      if (stopped) return;
-      await captureAndScan();
-      if (!stopped) timer = setTimeout(loop, SCAN_INTERVAL_MS);
-    }
 
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } })
@@ -106,18 +39,57 @@ export function CameraLiveModal({
         }
         stream = s;
         if (videoRef.current) videoRef.current.srcObject = s;
-        loop();
       })
       .catch(() => setError(true));
 
     return () => {
       stopped = true;
-      clearTimeout(timer);
       stream?.getTracks().forEach((t) => t.stop());
       stopScanner();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // captura de um toque só — sem loop tentando travar sozinho: no celular o OCR já leva
+  // 1-3s por leitura, esperar duas leituras iguais seguidas virava 5-10s+ de espera incerta
+  async function capture() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const frame = frameRef.current;
+    if (!video || !canvas || !frame || video.videoWidth === 0) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // recorta só a área do quadro-guia, não o frame inteiro — sem isso o OCR
+    // via com fundo/mão/mesa junto da carta, que fica pequena demais pra ler
+    const videoRect = video.getBoundingClientRect();
+    const guideRect = frame.getBoundingClientRect();
+    const scale = Math.max(videoRect.width / video.videoWidth, videoRect.height / video.videoHeight);
+    const offsetX = (video.videoWidth * scale - videoRect.width) / 2;
+    const offsetY = (video.videoHeight * scale - videoRect.height) / 2;
+    const srcX = (guideRect.left - videoRect.left + offsetX) / scale;
+    const srcY = (guideRect.top - videoRect.top + offsetY) / scale;
+    const srcW = guideRect.width / scale;
+    const srcH = guideRect.height / scale;
+
+    const UPSCALE = 2; // câmera ambiente costuma dar sensor de baixa resolução — amplia antes do OCR
+    canvas.width = srcW * UPSCALE;
+    canvas.height = srcH * UPSCALE;
+    ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+    setDebugCrop(canvas.toDataURL("image/png"));
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) return;
+
+    setPhase("analyzing");
+    try {
+      const text = await scanCardText(blob);
+      setDebugRaw(text);
+      setGuess(guessSearchQuery(text));
+    } catch {
+      setGuess("");
+    }
+    setPhase("result");
+  }
 
   if (error) {
     return (
@@ -180,15 +152,48 @@ export function CameraLiveModal({
         className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/90 to-transparent px-6 pt-16"
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
-        <p className="text-[13px] text-white/70">{analyzing ? "analisando…" : "aponte pra carta"}</p>
-        <p className="min-h-[1.5em] text-[17px] font-medium text-white">{guess || " "}</p>
-        <button
-          onClick={() => guess && onScanned(guess)}
-          disabled={!guess}
-          className="w-full max-w-xs rounded-2xl bg-accent py-3 text-[15px] font-medium text-accent-foreground transition-opacity disabled:opacity-30"
-        >
-          Usar esse
-        </button>
+        {phase === "live" && (
+          <>
+            <p className="text-[13px] text-white/70">encaixe a carta no quadro e toque pra fotografar</p>
+            <button
+              onClick={capture}
+              aria-label="fotografar"
+              className="h-16 w-16 rounded-full border-4 border-white bg-white/20 transition-transform active:scale-90"
+            />
+          </>
+        )}
+
+        {phase === "analyzing" && (
+          <div className="flex items-center gap-2 py-4 text-[15px] text-white">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            lendo a carta…
+          </div>
+        )}
+
+        {phase === "result" && (
+          <>
+            <p className="text-[13px] text-white/70">{guess ? "reconheci:" : "não consegui ler essa foto"}</p>
+            <p className="min-h-[1.5em] text-[17px] font-medium text-white">{guess || " "}</p>
+            <div className="flex w-full max-w-xs gap-2">
+              <button
+                onClick={() => {
+                  setPhase("live");
+                  setGuess("");
+                }}
+                className="flex-1 rounded-2xl bg-white/15 py-3 text-[15px] font-medium text-white"
+              >
+                Tentar de novo
+              </button>
+              <button
+                onClick={() => guess && onScanned(guess)}
+                disabled={!guess}
+                className="flex-1 rounded-2xl bg-accent py-3 text-[15px] font-medium text-accent-foreground transition-opacity disabled:opacity-30"
+              >
+                Usar esse
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
